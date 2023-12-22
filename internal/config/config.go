@@ -17,8 +17,6 @@ type LobbySettingDefaults struct {
 	DrawingTime        string `env:"DRAWING_TIME"`
 	Rounds             string `env:"ROUNDS"`
 	MaxPlayers         string `env:"MAX_PLAYERS"`
-	CustomWords        string `env:"CUSTOM_WORDS"`
-	CustomWordsPerTurn string `env:"CUSTOM_WORDS_PER_TURN"`
 	ClientsPerIPLimit  string `env:"CLIENTS_PER_IP_LIMIT"`
 	Language           string `env:"LANGUAGE"`
 }
@@ -36,6 +34,18 @@ type LobbyCleanup struct {
 	// inactivity and won't keep the lobby up. Note that cleaning up a lobby can
 	// therefore take up to Interval + PlayerInactivityThreshold.
 	PlayerInactivityThreshold time.Duration `env:"PLAYER_INACTIVITY_THRESHOLD"`
+}
+
+type DbConfig struct {
+	Addr         string `env:"ADDR"`
+	User         string `env:"USER"`
+	Password     string `env:"PASSWORD"`
+	Database     string `env:"DBNAME"`
+	AppName      string `env:"APPNAME"`
+	Timeout      time.Duration `env:"TIMEOUT"`
+	DialTimeout  time.Duration `env:"DIAL_TIMEOUT"`
+	ReadTimeout  time.Duration `env:"READ_TIMEOUT"`
+	WriteTimeout time.Duration `env:"WRITE_TIMEOUT"`
 }
 
 type Config struct {
@@ -56,6 +66,7 @@ type Config struct {
 	Port                 uint16               `env:"PORT"`
 	CORS                 CORS                 `envPrefix:"CORS_"`
 	LobbyCleanup         LobbyCleanup         `envPrefix:"LOBBY_CLEANUP_"`
+	Database             DbConfig             `envPrefix:"DB_CONFIG_"`
 }
 
 var Default = Config{
@@ -65,7 +76,6 @@ var Default = Config{
 		DrawingTime:        "120",
 		Rounds:             "4",
 		MaxPlayers:         "12",
-		CustomWordsPerTurn: "3",
 		ClientsPerIPLimit:  "1",
 		Language:           "english",
 	},
@@ -76,6 +86,17 @@ var Default = Config{
 	LobbyCleanup: LobbyCleanup{
 		Interval:                  90 * time.Second,
 		PlayerInactivityThreshold: 75 * time.Second,
+	},
+	Database: DbConfig{
+		Addr:         "localhost:5432",
+		User:         "scribblers",
+		Password:     "password",
+		Database:     "scribblers",
+		AppName:      "scribblers",
+		Timeout:      5 * time.Second,
+		DialTimeout:  5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
 	},
 }
 

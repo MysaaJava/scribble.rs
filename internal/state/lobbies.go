@@ -13,6 +13,7 @@ import (
 
 var (
 	globalStateMutex = &sync.Mutex{}
+	bunConn          bun.DB
 	lobbies          []*game.Lobby
 )
 

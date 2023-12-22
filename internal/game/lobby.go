@@ -27,7 +27,7 @@ import (
 
 var (
 	LobbySettingBounds = SettingBounds{
-		MinDrawingTime:        60,
+		MinDrawingTime:        5,
 		MaxDrawingTime:        300,
 		MinRounds:             1,
 		MaxRounds:             20,
@@ -35,8 +35,6 @@ var (
 		MaxMaxPlayers:         24,
 		MinClientsPerIPLimit:  1,
 		MaxClientsPerIPLimit:  24,
-		MinCustomWordsPerTurn: 1,
-		MaxCustomWordsPerTurn: 3,
 	}
 	SupportedLanguages = map[string]string{
 		"english_gb": "English (GB)",
@@ -69,8 +67,6 @@ type SettingBounds struct {
 	MaxMaxPlayers         int `json:"maxMaxPlayers"`
 	MinClientsPerIPLimit  int `json:"minClientsPerIpLimit"`
 	MaxClientsPerIPLimit  int `json:"maxClientsPerIpLimit"`
-	MinCustomWordsPerTurn int `json:"minCustomWordsPerTurn"`
-	MaxCustomWordsPerTurn int `json:"maxCustomWordsPerTurn"`
 }
 
 func (lobby *Lobby) HandleEvent(eventType string, payload []byte, player *Player) error {

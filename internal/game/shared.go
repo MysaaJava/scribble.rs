@@ -227,14 +227,11 @@ type Player struct {
 // EditableLobbySettings represents all lobby settings that are editable by
 // the lobby owner after the lobby has already been opened.
 type EditableLobbySettings struct {
-	// CustomWords are additional words that will be used in addition to the
-	// predefined words.
 	// Public defines whether the lobby is being broadcast to clients asking
 	// for available lobbies.
 	Public bool `json:"public"`
 	// MaxPlayers defines the maximum amount of players in a single lobby.
-	MaxPlayers         int `json:"maxPlayers"`
-	CustomWordsPerTurn int `json:"customWordsPerTurn"`
+	MaxPlayers         int   `json:"maxPlayers"`
 	// ClientsPerIPLimit helps preventing griefing by reducing each player
 	// to one tab per IP address.
 	ClientsPerIPLimit int `json:"clientsPerIpLimit"`

@@ -27,7 +27,7 @@ type Lobby struct {
 	// screw with the score calculation of the current turn.
 	DrawingTimeNew int
 
-	CustomWords []string
+	WordGroups  []int
 	words       []string
 
 	// players references all participants of the Lobby.
