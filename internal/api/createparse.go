@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/scribble-rs/scribble.rs/internal/game"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 // ParsePlayerName checks if the given value is a valid playername. Currently
@@ -68,20 +66,23 @@ func ParseMaxPlayers(value string) (int, error) {
 //	wordone,,wordtwo
 //	,
 //	wordone,
-func ParseCustomWords(value string) ([]string, error) {
+func ParseWordGroups(value string) ([]int, error) {
 	trimmedValue := strings.TrimSpace(value)
 	if trimmedValue == "" {
 		return nil, nil
 	}
 
-	lowercaser := cases.Lower(language.English)
-	result := strings.Split(trimmedValue, ",")
-	for index, item := range result {
-		trimmedItem := lowercaser.String(strings.TrimSpace(item))
-		if trimmedItem == "" {
-			return nil, errors.New("custom words must not be empty")
+	resultStr := strings.Split(trimmedValue, ",")
+	result := make([]int,len(resultStr))
+	for index, item := range resultStr {
+		if item == "" {
+			return nil, errors.New("word groups must not be empty")
 		}
-		result[index] = trimmedItem
+		parsed, errResult := strconv.ParseInt(item, 10, 32)
+		if (errResult != nil) {
+			return nil,errResult
+		}
+		result[index] = int(parsed)
 	}
 
 	return result, nil

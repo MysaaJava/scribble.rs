@@ -21,8 +21,6 @@ import (
 	petname "github.com/Bios-Marcel/go-petname"
 	"github.com/agnivade/levenshtein"
 	"github.com/gofrs/uuid"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 var (
@@ -865,42 +863,24 @@ func CreateLobby(
 	cfg *config.Config,
 	playerName, chosenLanguage string,
 	publicLobby bool,
-	drawingTime, rounds, maxPlayers, customWordsPerTurn, clientsPerIPLimit int,
-	customWords []string,
-) (*Player, *Lobby, error) {
+	drawingTime, rounds, maxPlayers, clientsPerIPLimit int,
+	wordGroups []int) (*Player, *Lobby, error) {
 	lobby := &Lobby{
 		LobbyID: uuid.Must(uuid.NewV4()).String(),
 		EditableLobbySettings: EditableLobbySettings{
 			Rounds:             rounds,
 			DrawingTime:        drawingTime,
 			MaxPlayers:         maxPlayers,
-			CustomWordsPerTurn: customWordsPerTurn,
+			WordGroups: wordGroups,
 			ClientsPerIPLimit:  clientsPerIPLimit,
 			Public:             publicLobby,
 		},
-		CustomWords:    customWords,
 		currentDrawing: make([]any, 0),
 		State:          Unstarted,
 		mutex:          &sync.Mutex{},
 	}
 
-	if len(customWords) > 1 {
-		rand.Shuffle(len(lobby.CustomWords), func(i, j int) {
-			lobby.CustomWords[i], lobby.CustomWords[j] = lobby.CustomWords[j], lobby.CustomWords[i]
-		})
-	}
-
 	lobby.Wordpack = chosenLanguage
-
-	// Necessary to correctly treat words from player, however, custom words might be treated incorrectly.
-	lobby.lowercaser = cases.Lower(language.Make(getLanguageIdentifier(chosenLanguage)))
-
-	// customWords are lowercased afterwards, as they are direct user input.
-	if len(customWords) > 0 {
-		for customWordIndex, customWord := range customWords {
-			customWords[customWordIndex] = lobby.lowercaser.String(customWord)
-		}
-	}
 
 	player := createPlayer(playerName)
 

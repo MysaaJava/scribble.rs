@@ -17,6 +17,7 @@ type LobbySettingDefaults struct {
 	DrawingTime        string `env:"DRAWING_TIME"`
 	Rounds             string `env:"ROUNDS"`
 	MaxPlayers         string `env:"MAX_PLAYERS"`
+	WordGroups         string `env:"WORD_GROUPS"`
 	ClientsPerIPLimit  string `env:"CLIENTS_PER_IP_LIMIT"`
 	Language           string `env:"LANGUAGE"`
 }

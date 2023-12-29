@@ -55,8 +55,29 @@ func easyjson102f8a2fDecodeGithubComScribbleRsScribbleRsInternalApi(in *jlexer.L
 			out.DrawingTime = int(in.Int())
 		case "maxClientsPerIp":
 			out.MaxClientsPerIP = int(in.Int())
-		case "customWords":
-			out.CustomWords = bool(in.Bool())
+		case "wordGroups":
+			if in.IsNull() {
+				in.Skip()
+				out.WordGroups = nil
+			} else {
+				in.Delim('[')
+				if out.WordGroups == nil {
+					if !in.IsDelim(']') {
+						out.WordGroups = make([]int, 0, 8)
+					} else {
+						out.WordGroups = []int{}
+					}
+				} else {
+					out.WordGroups = (out.WordGroups)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 int
+					v1 = int(in.Int())
+					out.WordGroups = append(out.WordGroups, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -117,9 +138,20 @@ func easyjson102f8a2fEncodeGithubComScribbleRsScribbleRsInternalApi(out *jwriter
 		out.Int(int(in.MaxClientsPerIP))
 	}
 	{
-		const prefix string = ",\"customWords\":"
+		const prefix string = ",\"wordGroups\":"
 		out.RawString(prefix)
-		out.Bool(bool(in.CustomWords))
+		if in.WordGroups == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v2, v3 := range in.WordGroups {
+				if v2 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v3))
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -164,17 +196,17 @@ func easyjson102f8a2fDecodeGithubComScribbleRsScribbleRsInternalApi1(in *jlexer.
 			*out = (*out)[:0]
 		}
 		for !in.IsDelim(']') {
-			var v1 *LobbyEntry
+			var v4 *LobbyEntry
 			if in.IsNull() {
 				in.Skip()
-				v1 = nil
+				v4 = nil
 			} else {
-				if v1 == nil {
-					v1 = new(LobbyEntry)
+				if v4 == nil {
+					v4 = new(LobbyEntry)
 				}
-				(*v1).UnmarshalEasyJSON(in)
+				(*v4).UnmarshalEasyJSON(in)
 			}
-			*out = append(*out, v1)
+			*out = append(*out, v4)
 			in.WantComma()
 		}
 		in.Delim(']')
@@ -188,14 +220,14 @@ func easyjson102f8a2fEncodeGithubComScribbleRsScribbleRsInternalApi1(out *jwrite
 		out.RawString("null")
 	} else {
 		out.RawByte('[')
-		for v2, v3 := range in {
-			if v2 > 0 {
+		for v5, v6 := range in {
+			if v5 > 0 {
 				out.RawByte(',')
 			}
-			if v3 == nil {
+			if v6 == nil {
 				out.RawString("null")
 			} else {
-				(*v3).MarshalEasyJSON(out)
+				(*v6).MarshalEasyJSON(out)
 			}
 		}
 		out.RawByte(']')
@@ -266,14 +298,35 @@ func easyjson102f8a2fDecodeGithubComScribbleRsScribbleRsInternalApi2(in *jlexer.
 			out.Public = bool(in.Bool())
 		case "maxPlayers":
 			out.MaxPlayers = int(in.Int())
-		case "customWordsPerTurn":
-			out.CustomWordsPerTurn = int(in.Int())
 		case "clientsPerIpLimit":
 			out.ClientsPerIPLimit = int(in.Int())
 		case "rounds":
 			out.Rounds = int(in.Int())
 		case "drawingTime":
 			out.DrawingTime = int(in.Int())
+		case "wordGroups":
+			if in.IsNull() {
+				in.Skip()
+				out.WordGroups = nil
+			} else {
+				in.Delim('[')
+				if out.WordGroups == nil {
+					if !in.IsDelim(']') {
+						out.WordGroups = make([]int, 0, 8)
+					} else {
+						out.WordGroups = []int{}
+					}
+				} else {
+					out.WordGroups = (out.WordGroups)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v8 int
+					v8 = int(in.Int())
+					out.WordGroups = append(out.WordGroups, v8)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "minDrawingTime":
 			out.MinDrawingTime = int(in.Int())
 		case "maxDrawingTime":
@@ -290,10 +343,6 @@ func easyjson102f8a2fDecodeGithubComScribbleRsScribbleRsInternalApi2(in *jlexer.
 			out.MinClientsPerIPLimit = int(in.Int())
 		case "maxClientsPerIpLimit":
 			out.MaxClientsPerIPLimit = int(in.Int())
-		case "minCustomWordsPerTurn":
-			out.MinCustomWordsPerTurn = int(in.Int())
-		case "maxCustomWordsPerTurn":
-			out.MaxCustomWordsPerTurn = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -354,11 +403,6 @@ func easyjson102f8a2fEncodeGithubComScribbleRsScribbleRsInternalApi2(out *jwrite
 		out.Int(int(in.MaxPlayers))
 	}
 	{
-		const prefix string = ",\"customWordsPerTurn\":"
-		out.RawString(prefix)
-		out.Int(int(in.CustomWordsPerTurn))
-	}
-	{
 		const prefix string = ",\"clientsPerIpLimit\":"
 		out.RawString(prefix)
 		out.Int(int(in.ClientsPerIPLimit))
@@ -372,6 +416,22 @@ func easyjson102f8a2fEncodeGithubComScribbleRsScribbleRsInternalApi2(out *jwrite
 		const prefix string = ",\"drawingTime\":"
 		out.RawString(prefix)
 		out.Int(int(in.DrawingTime))
+	}
+	{
+		const prefix string = ",\"wordGroups\":"
+		out.RawString(prefix)
+		if in.WordGroups == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v10, v11 := range in.WordGroups {
+				if v10 > 0 {
+					out.RawByte(',')
+				}
+				out.Int(int(v11))
+			}
+			out.RawByte(']')
+		}
 	}
 	{
 		const prefix string = ",\"minDrawingTime\":"
@@ -412,16 +472,6 @@ func easyjson102f8a2fEncodeGithubComScribbleRsScribbleRsInternalApi2(out *jwrite
 		const prefix string = ",\"maxClientsPerIpLimit\":"
 		out.RawString(prefix)
 		out.Int(int(in.MaxClientsPerIPLimit))
-	}
-	{
-		const prefix string = ",\"minCustomWordsPerTurn\":"
-		out.RawString(prefix)
-		out.Int(int(in.MinCustomWordsPerTurn))
-	}
-	{
-		const prefix string = ",\"maxCustomWordsPerTurn\":"
-		out.RawString(prefix)
-		out.Int(int(in.MaxCustomWordsPerTurn))
 	}
 	out.RawByte('}')
 }

@@ -46,7 +46,7 @@ type LobbyEntry struct {
 	Rounds          int        `json:"rounds"`
 	DrawingTime     int        `json:"drawingTime"`
 	MaxClientsPerIP int        `json:"maxClientsPerIp"`
-	CustomWords     bool       `json:"customWords"`
+	WordGroups      []int      `json:"wordGroups"`
 }
 
 func (handler *V1Handler) getLobbies(writer http.ResponseWriter, _ *http.Request) {
@@ -65,7 +65,7 @@ func (handler *V1Handler) getLobbies(writer http.ResponseWriter, _ *http.Request
 			Round:           lobby.Round,
 			Rounds:          lobby.Rounds,
 			DrawingTime:     lobby.DrawingTime,
-			CustomWords:     len(lobby.CustomWords) > 0,
+			WordGroups:      lobby.WordGroups,
 			MaxClientsPerIP: lobby.ClientsPerIPLimit,
 			Wordpack:        lobby.Wordpack,
 			State:           lobby.State,
@@ -90,8 +90,7 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	drawingTime, drawingTimeInvalid := ParseDrawingTime(request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := ParseRounds(request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := ParseMaxPlayers(request.Form.Get("max_players"))
-	customWords, customWordsInvalid := ParseCustomWords(request.Form.Get("custom_words"))
-	customWordsPerTurn, customWordsPerTurnInvalid := ParseCustomWordsPerTurn(request.Form.Get("custom_words_per_turn"))
+	wordGroups, wordGroupsInvalid := ParseWordGroups(request.Form.Get("word_groups"))
 	clientsPerIPLimit, clientsPerIPLimitInvalid := ParseClientsPerIPLimit(request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := ParseBoolean("public", request.Form.Get("public"))
 
@@ -108,11 +107,8 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	if maxPlayersInvalid != nil {
 		requestErrors = append(requestErrors, maxPlayersInvalid.Error())
 	}
-	if customWordsInvalid != nil {
-		requestErrors = append(requestErrors, customWordsInvalid.Error())
-	}
-	if customWordsPerTurnInvalid != nil {
-		requestErrors = append(requestErrors, customWordsPerTurnInvalid.Error())
+	if wordGroupsInvalid != nil {
+		requestErrors = append(requestErrors, wordGroupsInvalid.Error())
 	}
 	if clientsPerIPLimitInvalid != nil {
 		requestErrors = append(requestErrors, clientsPerIPLimitInvalid.Error())
@@ -128,8 +124,8 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 
 	playerName := GetPlayername(request)
 	player, lobby, err := game.CreateLobby(handler.cfg, playerName, language,
-		publicLobby, drawingTime, rounds, maxPlayers, customWordsPerTurn,
-		clientsPerIPLimit, customWords)
+		publicLobby, drawingTime, rounds, maxPlayers,
+		clientsPerIPLimit, wordGroups)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -239,8 +235,8 @@ func (handler *V1Handler) patchLobby(writer http.ResponseWriter, request *http.R
 	var requestErrors []string
 
 	// Uneditable properties
-	if request.Form.Get("custom_words") != "" {
-		requestErrors = append(requestErrors, "can't modify custom_words in existing lobby")
+	if request.Form.Get("wordGroups") != "" {
+		requestErrors = append(requestErrors, "can't modify wordGroups in existing lobby")
 	}
 	if request.Form.Get("language") != "" {
 		requestErrors = append(requestErrors, "can't modify language in existing lobby")
@@ -250,7 +246,6 @@ func (handler *V1Handler) patchLobby(writer http.ResponseWriter, request *http.R
 	maxPlayers, maxPlayersInvalid := ParseMaxPlayers(request.Form.Get("max_players"))
 	drawingTime, drawingTimeInvalid := ParseDrawingTime(request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := ParseRounds(request.Form.Get("rounds"))
-	customWordsPerTurn, customWordsPerTurnInvalid := ParseCustomWordsPerTurn(request.Form.Get("custom_words_per_turn"))
 	clientsPerIPLimit, clientsPerIPLimitInvalid := ParseClientsPerIPLimit(request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := ParseBoolean("public", request.Form.Get("public"))
 
@@ -274,9 +269,6 @@ func (handler *V1Handler) patchLobby(writer http.ResponseWriter, request *http.R
 			requestErrors = append(requestErrors, fmt.Sprintf("rounds must be greater than or equal to the current round (%d)", currentRound))
 		}
 	}
-	if customWordsPerTurnInvalid != nil {
-		requestErrors = append(requestErrors, customWordsPerTurnInvalid.Error())
-	}
 	if clientsPerIPLimitInvalid != nil {
 		requestErrors = append(requestErrors, clientsPerIPLimitInvalid.Error())
 	}
@@ -297,7 +289,6 @@ func (handler *V1Handler) patchLobby(writer http.ResponseWriter, request *http.R
 		// really break anything.
 
 		lobby.MaxPlayers = maxPlayers
-		lobby.CustomWordsPerTurn = customWordsPerTurn
 		lobby.ClientsPerIPLimit = clientsPerIPLimit
 		lobby.Public = publicLobby
 		lobby.Rounds = rounds

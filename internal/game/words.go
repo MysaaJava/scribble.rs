@@ -77,44 +77,14 @@ func readDefaultWordList(lowercaser cases.Caser, chosenLanguage string) ([]strin
 // dictionary, depending on the settings specified by the lobbies creator.
 func GetRandomWords(wordCount int, lobby *Lobby) []string {
 	words := make([]string, wordCount)
-
-	for customWordsLeft, i := lobby.CustomWordsPerTurn, 0; i < wordCount; i++ {
-		if customWordsLeft > 0 && len(lobby.CustomWords) > 0 {
-			customWordsLeft--
-			words[i] = popCustomWord(lobby)
-		} else {
-			words[i] = popWordpackWord(lobby)
-		}
+	
+	//TODO here we should get words from the database
+	
+	for i := 0; i < wordCount; i++ {
+		words[i] = "ascenseur"
 	}
 
 	return words
-}
-
-func popCustomWord(lobby *Lobby) string {
-	lastIndex := len(lobby.CustomWords) - 1
-	lastWord := lobby.CustomWords[lastIndex]
-	lobby.CustomWords = lobby.CustomWords[:lastIndex]
-	return lastWord
-}
-
-// popWordpackWord gets X words from the wordpack. The major difference to
-// popCustomWords is, that the wordlist gets reset and reshuffeled once every
-// item has been popped.
-func popWordpackWord(lobby *Lobby) string {
-	if len(lobby.words) == 0 {
-		var err error
-		lobby.words, err = readDefaultWordList(lobby.lowercaser, lobby.Wordpack)
-		if err != nil {
-			// Since this list should've been successfully read once before, we
-			// can "safely" panic if this happens, assuming that there's a
-			// deeper problem.
-			panic(err)
-		}
-	}
-	lastIndex := len(lobby.words) - 1
-	lastWord := lobby.words[lastIndex]
-	lobby.words = lobby.words[:lastIndex]
-	return lastWord
 }
 
 func shuffleWordList(wordlist []string) {

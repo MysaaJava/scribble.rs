@@ -24,7 +24,7 @@ type WordGroup struct {
 	ParentID *WordGroup `bun:"parentid,rel:belongs-to,join:parentid=id"`
 }
 
-func initDatabase(config *Config) (*bun.DB) {
+func InitializeDatabase(config *Config) *bun.DB {
 	pgconn := pgdriver.NewConnector(
 		pgdriver.WithAddr(config.Database.Addr),
 		pgdriver.WithUser(config.Database.User),

@@ -106,8 +106,7 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	drawingTime, drawingTimeInvalid := api.ParseDrawingTime(request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := api.ParseRounds(request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := api.ParseMaxPlayers(request.Form.Get("max_players"))
-	customWords, customWordsInvalid := api.ParseCustomWords(request.Form.Get("custom_words"))
-	customWordsPerTurn, customWordsPerTurnInvalid := api.ParseCustomWordsPerTurn(request.Form.Get("custom_words_per_turn"))
+	wordGroups, wordGroupsInvalid := api.ParseWordGroups(request.Form.Get("word_groups"))
 	clientsPerIPLimit, clientsPerIPLimitInvalid := api.ParseClientsPerIPLimit(request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := api.ParseBoolean("public", request.Form.Get("public"))
 
@@ -120,8 +119,7 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 			DrawingTime:        request.Form.Get("drawing_time"),
 			Rounds:             request.Form.Get("rounds"),
 			MaxPlayers:         request.Form.Get("max_players"),
-			CustomWords:        request.Form.Get("custom_words"),
-			CustomWordsPerTurn: request.Form.Get("custom_words_per_turn"),
+			WordGroups:         request.Form.Get("word_groups"),
 			ClientsPerIPLimit:  request.Form.Get("clients_per_ip_limit"),
 			Language:           request.Form.Get("language"),
 		},
@@ -139,11 +137,8 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	if maxPlayersInvalid != nil {
 		pageData.Errors = append(pageData.Errors, maxPlayersInvalid.Error())
 	}
-	if customWordsInvalid != nil {
-		pageData.Errors = append(pageData.Errors, customWordsInvalid.Error())
-	}
-	if customWordsPerTurnInvalid != nil {
-		pageData.Errors = append(pageData.Errors, customWordsPerTurnInvalid.Error())
+	if wordGroupsInvalid != nil {
+		pageData.Errors = append(pageData.Errors, wordGroupsInvalid.Error())
 	}
 	if clientsPerIPLimitInvalid != nil {
 		pageData.Errors = append(pageData.Errors, clientsPerIPLimitInvalid.Error())
@@ -167,8 +162,8 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	playerName := api.GetPlayername(request)
 
 	player, lobby, err := game.CreateLobby(handler.cfg, playerName, language,
-		publicLobby, drawingTime, rounds, maxPlayers, customWordsPerTurn,
-		clientsPerIPLimit, customWords)
+		publicLobby, drawingTime, rounds, maxPlayers,
+		clientsPerIPLimit, wordGroups)
 	if err != nil {
 		pageData.Errors = append(pageData.Errors, err.Error())
 		if err := pageTemplates.ExecuteTemplate(writer, "lobby-create-page", pageData); err != nil {
