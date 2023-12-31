@@ -6,16 +6,17 @@ import (
 	"log"
 	"sync"
 	"time"
+	"database/sql"
+	
+	_ "github.com/lib/pq"
 
 	"github.com/scribble-rs/scribble.rs/internal/config"
 	"github.com/scribble-rs/scribble.rs/internal/game"
-	
-	"github.com/uptrace/bun"
 )
 
 var (
 	globalStateMutex = &sync.Mutex{}
-	bunConn          *bun.DB
+	sqldb          *sql.DB
 	lobbies          []*game.Lobby
 )
 
@@ -70,15 +71,6 @@ func AddLobby(lobby *game.Lobby) {
 	defer globalStateMutex.Unlock()
 
 	lobbies = append(lobbies, lobby)
-}
-
-func GiveDatabase(db *bun.DB) {
-	if db == nil {
-		globalStateMutex.Lock()
-		defer globalStateMutex.Unlock()
-		
-		bunConn = db
-	}
 }
 
 // GetLobby returns a Lobby that has a matching ID or no Lobby if none could

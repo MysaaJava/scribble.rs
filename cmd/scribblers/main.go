@@ -22,8 +22,7 @@ import (
 
 func main() {
 	cfg, err := config.Load()
-	bundb := config.InitializeDatabase(cfg)
-	state.GiveDatabase(bundb)
+	config.InitializeDatabase(cfg)
 	if err != nil {
 		log.Fatalln("error loading configuration:", err)
 	}

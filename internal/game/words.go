@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/cases"
+	"github.com/scribble-rs/scribble.rs/internal/config"
 )
 
 var (
@@ -76,14 +77,9 @@ func readDefaultWordList(lowercaser cases.Caser, chosenLanguage string) ([]strin
 // The words will be chosen from the custom words and the default
 // dictionary, depending on the settings specified by the lobbies creator.
 func GetRandomWords(wordCount int, lobby *Lobby) []string {
-	words := make([]string, wordCount)
+	allwords := config.GetAllWords(lobby.WordGroups)
+	words := config.RandNUniqueOfSlice(wordCount,allwords)
 	
-	//TODO here we should get words from the database
-	
-	for i := 0; i < wordCount; i++ {
-		words[i] = "ascenseur"
-	}
-
 	return words
 }
 

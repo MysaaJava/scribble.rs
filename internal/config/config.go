@@ -38,11 +38,11 @@ type LobbyCleanup struct {
 }
 
 type DbConfig struct {
-	Addr         string `env:"ADDR"`
+	Host         string `env:"HOST"`
+	Port         string `env:"PORT"`
 	User         string `env:"USER"`
 	Password     string `env:"PASSWORD"`
 	Database     string `env:"DBNAME"`
-	AppName      string `env:"APPNAME"`
 	Timeout      time.Duration `env:"TIMEOUT"`
 	DialTimeout  time.Duration `env:"DIAL_TIMEOUT"`
 	ReadTimeout  time.Duration `env:"READ_TIMEOUT"`
@@ -89,15 +89,11 @@ var Default = Config{
 		PlayerInactivityThreshold: 75 * time.Second,
 	},
 	Database: DbConfig{
-		Addr:         "localhost:5432",
+		Host:         "localhost",
+		Port:         "5432",
 		User:         "scribblers",
 		Password:     "password",
 		Database:     "scribblers",
-		AppName:      "scribblers",
-		Timeout:      5 * time.Second,
-		DialTimeout:  5 * time.Second,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
 	},
 }
 
