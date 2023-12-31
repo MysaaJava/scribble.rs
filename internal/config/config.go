@@ -43,10 +43,7 @@ type DbConfig struct {
 	User         string `env:"USER"`
 	Password     string `env:"PASSWORD"`
 	Database     string `env:"DBNAME"`
-	Timeout      time.Duration `env:"TIMEOUT"`
-	DialTimeout  time.Duration `env:"DIAL_TIMEOUT"`
-	ReadTimeout  time.Duration `env:"READ_TIMEOUT"`
-	WriteTimeout time.Duration `env:"WRITE_TIMEOUT"`
+	SslMode      string `env:"SSLMODE"`
 }
 
 type Config struct {
@@ -94,6 +91,7 @@ var Default = Config{
 		User:         "scribblers",
 		Password:     "password",
 		Database:     "scribblers",
+		SslMode:      "require",
 	},
 }
 

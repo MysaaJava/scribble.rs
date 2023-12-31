@@ -7,8 +7,6 @@ import (
 	"sync"
 	"time"
 	"database/sql"
-	
-	_ "github.com/lib/pq"
 
 	"github.com/scribble-rs/scribble.rs/internal/config"
 	"github.com/scribble-rs/scribble.rs/internal/game"

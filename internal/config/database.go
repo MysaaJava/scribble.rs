@@ -8,6 +8,7 @@ import (
 	"time"
 	"log"
 	"database/sql"
+	_ "github.com/lib/pq"
 	"github.com/blockloop/scan/v2"
 )
 
@@ -15,7 +16,7 @@ var db *sql.DB
 
 
 func InitializeDatabase(config *Config) {
-	connstr := "user='"+config.Database.User + "' password='" + config.Database.Password + "' host='" + config.Database.Host+ "' port='" + config.Database.Port + "' dbname='" + config.Database.Database + "'"
+	connstr := "user='"+config.Database.User + "' password='" + config.Database.Password + "' host='" + config.Database.Host+ "' port='" + config.Database.Port + "' dbname='" + config.Database.Database + "' sslmode='" + config.Database.SslMode+ "'"
 	log.Print("Connecting to database with connection string: "+connstr)
 	database, err := sql.Open("postgres", connstr)
 	if err != nil {
