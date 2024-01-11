@@ -1,3 +1,14 @@
+{{define "wordGroupsList"}}
+    <ul>
+    {{range $i, $wg := .}}
+    <li><input type="checkbox" name="word_groups" value="{{$wg.Id}}">{{$wg.Name}}</li>
+    {{if $wg.Children}}
+        {{template "wordGroupsList" $wg.Children}}
+    {{end}}
+    {{end}}
+    </ul>
+{{end}}
+
 {{define "lobby-create-page"}}
 <!DOCTYPE html>
 <html lang="{{.Locale}}">
@@ -71,10 +82,11 @@
                         <input class="input-item" type="number" name="clients_per_ip_limit"
                             min="{{.MinClientsPerIPLimit}}" max="{{.MaxClientsPerIPLimit}}"
                             value="{{.ClientsPerIPLimit}}" />
-                        <b>{{.Translation.Get "custom-words"}}</b>
-                        <textarea class="input-item" name="word_groups"
-                            placeholder="{{.Translation.Get "custom-words-info"}}">{{.WordGroups}}</textarea>
-                        <button type="submit" class="create-button" form="lobby-create">
+                        <b>{{.Translation.Get "word-groups"}}</b>
+                        <div name="word_groups" class="large-input-item">
+                            {{template "wordGroupsList" .WordGroups}}
+                        </div>
+                        <button type="submit" class="large-input-item" form="lobby-create">
                             {{.Translation.Get "create-lobby"}}
                         </button>
                     </form>
@@ -94,7 +106,6 @@
                                     <th>{{.Translation.Get "rounds-setting"}}</th>
                                     <th>{{.Translation.Get "players"}}</th>
                                     <th>{{.Translation.Get "drawing-time-setting"}}</th>
-                                    <th>{{.Translation.Get "custom-words"}}</th>
                                 </tr>
                             </thead>
                             <tbody id="lobby-table-body">
@@ -111,8 +122,6 @@
                     <span id="players-detail"></span>
                     <span class="lobby-detail">{{.Translation.Get "drawing-time-setting"}}:</span>
                     <span id="drawing-time-detail"></span>
-                    <span class="lobby-detail">{{.Translation.Get "custom-words"}}:</span>
-                    <span id="custom-words-detail"></span>
                     <span class="lobby-detail">{{.Translation.Get "players-per-ip-limit-setting"}}:</span>
                     <span id="max-clients-ip-detail"></span>
                     <button id="join-button" onclick="onJoin()" disabled>{{.Translation.Get "join-lobby"}}</button>
@@ -137,7 +146,6 @@
         let roundsDetail = document.getElementById("rounds-detail");
         let playersDetail = document.getElementById("players-detail");
         let drawingTimeDetail = document.getElementById("drawing-time-detail");
-        let customWordsDetail = document.getElementById("custom-words-detail");
         let maxClientsIPDetail = document.getElementById("max-clients-ip-detail");
 
         function onJoin() {
@@ -171,15 +179,12 @@
                         playersCell.innerText = lobby.playerCount + "/" + lobby.maxPlayers;
                         const drawingTimeCell = document.createElement("td");
                         drawingTimeCell.innerText = lobby.drawingTime.toString();
-                        const customWordsCell = document.createElement("td");
-                        customWordsCell.innerText = lobby.customWords ? '{{.Translation.Get "yes"}}' : '{{.Translation.Get "no"}}';
 
                         const newRow = document.createElement("tr");
                         newRow.appendChild(wordpackCell);
                         newRow.appendChild(roundsCell);
                         newRow.appendChild(playersCell);
                         newRow.appendChild(drawingTimeCell);
-                        newRow.appendChild(customWordsCell);
 
                         lobbyTableBody.appendChild(newRow);
 
@@ -202,7 +207,6 @@
                 roundsDetail.innerText = "";
                 playersDetail.innerText = "";
                 drawingTimeDetail.innerText = "";
-                customWordsDetail.innerText = "";
                 maxClientsIPDetail.innerText = "";
                 joinButton.disabled = true;
             } else {
@@ -210,7 +214,6 @@
                 roundsDetail.innerText = lobby.round + "/" + lobby.rounds;
                 playersDetail.innerText = lobby.playerCount + "/" + lobby.maxPlayers;
                 drawingTimeDetail.innerText = lobby.drawingTime.toString();
-                customWordsDetail.innerText = lobby.customWords ? '{{.Translation.Get "yes"}}' : '{{.Translation.Get "no"}}';
                 maxClientsIPDetail.innerText = lobby.maxClientsPerIp;
                 joinButton.disabled = false;
             }

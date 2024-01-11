@@ -90,7 +90,7 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	drawingTime, drawingTimeInvalid := ParseDrawingTime(request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := ParseRounds(request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := ParseMaxPlayers(request.Form.Get("max_players"))
-	wordGroups, wordGroupsInvalid := ParseWordGroups(request.Form.Get("word_groups"))
+	wordGroups, wordGroupsInvalid := ParseWordGroups(request.Form["word_groups"])
 	clientsPerIPLimit, clientsPerIPLimitInvalid := ParseClientsPerIPLimit(request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := ParseBoolean("public", request.Form.Get("public"))
 

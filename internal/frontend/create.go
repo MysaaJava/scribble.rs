@@ -66,6 +66,7 @@ func (handler *SSRHandler) homePageHandler(writer http.ResponseWriter, request *
 	createPageData := handler.createDefaultLobbyCreatePageData()
 	createPageData.Translation = translation
 	createPageData.Locale = locale
+	createPageData.WordGroups = config.GetWordGroups()
 
 	err := pageTemplates.ExecuteTemplate(writer, "lobby-create-page", createPageData)
 	if err != nil {
@@ -92,6 +93,7 @@ type LobbyCreatePageData struct {
 	Locale      string
 	Errors      []string
 	Languages   map[string]string
+	WordGroups  []config.WordGroup
 }
 
 // ssrCreateLobby allows creating a lobby, optionally returning errors that
@@ -101,12 +103,11 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	language, languageInvalid := api.ParseLanguage(request.Form.Get("language"))
 	drawingTime, drawingTimeInvalid := api.ParseDrawingTime(request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := api.ParseRounds(request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := api.ParseMaxPlayers(request.Form.Get("max_players"))
-	wordGroups, wordGroupsInvalid := api.ParseWordGroups(request.Form.Get("word_groups"))
+	wordGroups, wordGroupsInvalid := api.ParseWordGroups(request.Form["word_groups"])
 	clientsPerIPLimit, clientsPerIPLimitInvalid := api.ParseClientsPerIPLimit(request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := api.ParseBoolean("public", request.Form.Get("public"))
 

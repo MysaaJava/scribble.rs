@@ -66,18 +66,12 @@ func ParseMaxPlayers(value string) (int, error) {
 //	wordone,,wordtwo
 //	,
 //	wordone,
-func ParseWordGroups(value string) ([]int, error) {
-	trimmedValue := strings.TrimSpace(value)
-	if trimmedValue == "" {
-		return nil, nil
+func ParseWordGroups(values []string) ([]int, error) {
+	if (len(values)==0) {
+		return nil, errors.New("You must select at least one word group")
 	}
-
-	resultStr := strings.Split(trimmedValue, ",")
-	result := make([]int,len(resultStr))
-	for index, item := range resultStr {
-		if item == "" {
-			return nil, errors.New("word groups must not be empty")
-		}
+	result := make([]int,len(values))
+	for index, item := range values {
 		parsed, errResult := strconv.ParseInt(item, 10, 32)
 		if (errResult != nil) {
 			return nil,errResult

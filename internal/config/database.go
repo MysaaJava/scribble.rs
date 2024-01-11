@@ -14,6 +14,11 @@ import (
 
 var db *sql.DB
 
+type WordGroup struct {
+	Name string
+	Id int
+	Children []WordGroup
+}
 
 func InitializeDatabase(config *Config) {
 	connstr := "user='"+config.Database.User + "' password='" + config.Database.Password + "' host='" + config.Database.Host+ "' port='" + config.Database.Port + "' dbname='" + config.Database.Database + "' sslmode='" + config.Database.SslMode+ "'"
@@ -65,7 +70,6 @@ func GetAllWords(groupIDs []int) []string {
 		log.Fatal(err)
 	}
 	
-	log.Printf("Got %d words like for example %s",len(words),words[45])
 	return words
 }
 
@@ -80,6 +84,55 @@ func RandNUniqueOfSlice(count int, arr []string) []string {
 		out[i] = candidate
 	}
 	return out
+}
+
+func GetWordGroups() []WordGroup {
+	statement := `SELECT id,name,COALESCE(parentid,-1) FROM wgroups;`
+	res, err := db.Query(statement)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	var (
+		id int
+		name string
+		parentid int
+	)
+	var out []WordGroup
+	var childrenz map[int]([]WordGroup)
+	childrenz = make(map[int]([]WordGroup))
+	
+	for res.Next() {
+		err := res.Scan(&id, &name, &parentid)
+		if err != nil {
+			log.Fatal(err)
+		}
+		wg := WordGroup{
+			Id: id,
+			Name: name,
+		}
+		
+		if parentid == -1 {
+			out = append(out,wg)
+		} else {
+			childrenz[parentid] = append(childrenz[parentid],wg)
+		}
+	}
+	err = res.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	setChildrenInWordGroupArray(out, childrenz)
+	
+	return out
+}
+
+func setChildrenInWordGroupArray(wgarr ([]WordGroup), childrenz map[int]([]WordGroup)) {
+	for i := range wgarr {
+		wgarr[i].Children = childrenz[wgarr[i].Id]
+		setChildrenInWordGroupArray(wgarr[i].Children, childrenz)
+	}
 }
 
 
