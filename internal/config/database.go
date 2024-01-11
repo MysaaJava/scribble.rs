@@ -87,7 +87,7 @@ func RandNUniqueOfSlice(count int, arr []string) []string {
 }
 
 func GetWordGroups() []WordGroup {
-	statement := `SELECT id,name,COALESCE(parentid,-1) FROM wgroups;`
+	statement := `SELECT id,name,COALESCE(parentid,-1) FROM wgroups ORDER BY parentid NULLS FIRST,name;`
 	res, err := db.Query(statement)
 	if err != nil {
 		log.Fatal(err)
