@@ -34,6 +34,18 @@
     grid-column: 1 / -1;
 }
 
+li.parent-item {
+    list-style-type: "\2B9A";
+}
+li.leaf-item {
+    list-style-type: "\2B9E";
+}
+li.parent-item.open-item {
+    list-style-type: "\2B9B";
+}
+.parent-item+ul {
+    display: none;
+}
 .tab-header {
     display: grid;
     grid-template-columns: 1fr 1fr;
