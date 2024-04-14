@@ -246,10 +246,12 @@ func handleMessage(message string, sender *Player, lobby *Lobby) {
 		)
 		return
 	}
-
+	log.Printf("The trimmed message to lowercase : %s",trimmedMessage)
+	log.Printf("The transformer is ",lobby.lowercaser)
 	normInput := sanitize.CleanText(lobby.lowercaser.String(trimmedMessage))
-	normSearched := sanitize.CleanText(lobby.CurrentWord)
-
+	normSearched := sanitize.CleanText(lobby.lowercaser.String(lobby.CurrentWord))
+	
+	log.Printf("Trying to match %s with %s",normInput,normSearched)
 	// Since correct guess are probably the least common case, we'll always
 	// calculate the distance, as usually have to do it anyway.
 	switch levenshtein.ComputeDistance(normInput, normSearched) {
@@ -881,6 +883,13 @@ func CreateLobby(
 	}
 
 	lobby.Wordpack = chosenLanguage
+	
+	// Necessary to correctly treat words from player, however, custom words
+	// might be treated incorrectly, as they might not be the same language as
+	// the one specified for the lobby. If for example you chose 100 french
+	// custom words, but keep english_us as the lobby language, the casing rules
+	// will most likely be faulty.
+	lobby.lowercaser = WordlistData[chosenLanguage].Lowercaser()
 
 	player := createPlayer(playerName)
 
