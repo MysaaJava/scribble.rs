@@ -1,13 +1,15 @@
 package game
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"strings"
 	"unicode/utf8"
+	"slices"
+	"bufio"
+	"os"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -78,9 +80,6 @@ var (
 			Lowercaser:   func() cases.Caser { return cases.Lower(language.Persian) },
 		},
 	}
-
-	//go:embed words/*
-	wordFS embed.FS
 )
 
 func getLanguageIdentifier(language string) string {
@@ -110,27 +109,63 @@ func readWordListInternal(
 	return words, nil
 }
 
-// readDefaultWordList reads the wordlist for the given language from the filesystem.
-// If found, the list is cached and will be read from the cache upon next
-// request. The returned slice is a safe copy and can be mutated. If the
-// specified has no corresponding wordlist, an error is returned. This has been
-// a panic before, however, this could enable a user to forcefully crash the
-// whole application.
-func readDefaultWordList(lowercaser cases.Caser, chosenLanguage string) ([]string, error) {
-	log.Printf("Loading wordlist '%s'\n", chosenLanguage)
-	defer log.Printf("Wordlist loaded '%s'\n", chosenLanguage)
-	return readWordListInternal(lowercaser, chosenLanguage, func(key string) (string, error) {
-		wordBytes, err := wordFS.ReadFile("words/" + key)
-		if err != nil {
-			return "", fmt.Errorf("error reading wordfile: %w", err)
-		}
+// readFileWordLists reads the input path and appends all read words to the input array pointer.
+func readFileWordList(path string, lines *[]string) error {
+	file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
 
-		return strings.ReplaceAll(string(wordBytes), "\r", ""), nil
-	})
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+		*lines = append(*lines, scanner.Text())
+    }
+    return scanner.Err()
 }
 
+// readWordList reads a wordlist (and its children recursively) and add all read words to the input array pointer
+func readWordList(wl *WordList, data *[]string) error {
+	if (wl.Path != "") {
+		return readFileWordList(wl.Path, data)
+	} else {
+		for _, ch := range wl.Children {
+			err := readWordList(ch, data)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+// reloadlobbyWords outputs the list of words for the given lobby, reading required wordlists files
 func reloadLobbyWords(lobby *Lobby) ([]string, error) {
-	return readDefaultWordList(lobby.lowercaser, lobby.Wordpack)
+	wls := lobby.WordLists
+	log.Printf("Reading %d word lists", len(wls))
+	var words []string = make([]string, 0)
+	wordsp := &words
+	for _, wl := range wls {
+		err := readWordList(wl, wordsp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	log.Printf("Read a total of %d words", len(*wordsp))
+	return *wordsp, nil
+}
+
+// Helper function that takes out `count` random items out af an array `arr`
+func RandNUniqueOfSlice(count int, arr []string) []string {
+	out := make([]string,count)
+	for i := 0; i < count; i++ {
+		var candidate string
+		for k := 0; k < count * count * 100 && (slices.Contains(out,candidate)); k++ {
+			candidate = arr[rand.IntN(len(arr))]
+		}
+		out[i] = candidate
+	}
+	return out
 }
 
 // GetRandomWords gets a custom amount of random words for the passed Lobby.
@@ -148,7 +183,7 @@ func getRandomWords(wordCount int, lobby *Lobby, reloadWords func(lobby *Lobby) 
 
 	// If we have custom words only, we don't want to pop them off the stack.
 	// We want to keep going in circles, worstcase returning the same word 3 times.
-	if lobby.Wordpack == "custom" && len(lobby.CustomWords) > 0 {
+	if len(lobby.WordLists) == 0 && len(lobby.CustomWords) > 0 {
 		for i := range wordCount {
 			if lobby.customWordIndex >= len(lobby.CustomWords) {
 				lobby.customWordIndex = 0

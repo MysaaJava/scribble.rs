@@ -66,6 +66,22 @@ type SettingBounds struct {
 	MinWordsPerTurn int `json:"minWordsPerTurn" env:"MIN_WORDS_PER_TURN"`
 }
 
+// WordList defines the data parsed from a wordlist folder
+// The actual list of words is not stored here, only metadata
+type WordList struct {
+	Name string // Common name
+	FullName string // Full name with parents, slash-separated
+	Path string // If this is a leaf, filesystem path of the file
+	Parent *WordList // If not rood, pointer to the parent wordlist
+	Children []*WordList // Array containing pointer to every children
+}
+
+// Frontend application don't use a slash-separated FullName, but replaces every slash
+// with two underscores. That's what we call `Id`
+func (wl *WordList) Id() string {
+	return strings.Replace(wl.FullName, "/", "__", -1)
+}
+
 func (lobby *Lobby) HandleEvent(eventType string, payload []byte, player *Player) error {
 	if eventType == EventTypeKeepAlive {
 		// This is a known dummy event in order to avoid accidental websocket
@@ -1036,6 +1052,7 @@ func (lobby *Lobby) selectWord(index int) error {
 func CreateLobby(
 	desiredLobbyId string,
 	playerName, chosenLanguage string,
+	wordLists []*WordList,
 	settings *EditableLobbySettings,
 	customWords []string,
 	scoringCalculation ScoreCalculation,
@@ -1046,6 +1063,7 @@ func CreateLobby(
 	lobby := &Lobby{
 		LobbyID:               desiredLobbyId,
 		EditableLobbySettings: *settings,
+		WordLists:             wordLists,
 		CustomWords:           customWords,
 		currentDrawing:        make([]any, 0),
 		State:                 Unstarted,
@@ -1057,8 +1075,6 @@ func CreateLobby(
 			lobby.CustomWords[i], lobby.CustomWords[j] = lobby.CustomWords[j], lobby.CustomWords[i]
 		})
 	}
-
-	lobby.Wordpack = chosenLanguage
 
 	// Necessary to correctly treat words from player, however, custom words
 	// might be treated incorrectly, as they might not be the same language as

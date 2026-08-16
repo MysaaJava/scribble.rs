@@ -23,6 +23,62 @@ func ParsePlayerName(value string) (string, error) {
 	return trimmed, nil
 }
 
+// GetWordlist returns the Wordlist corresponding to the specified
+// name from the input list of wordlists
+// A name can contain slash, in which case, the wordlist will be searched
+// in the children of the wordlist (like a system path)
+func GetWordList(lists []*game.WordList, name string) (*game.WordList, error) {
+	if (name == "") {
+		return nil, errors.New("The empty string is not a valid wordlist name")
+	}
+	part0, rest, multipart := strings.Cut(name, "/")
+	i := -1
+	for index, wl := range lists {
+		if wl.Name == part0 {
+			i = index
+		}
+	}
+	if i == -1 {
+		return nil, errors.New("Wordlist name not found")
+	}
+	wl0 := lists[i]
+	if multipart {
+		return GetWordList(wl0.Children, rest)
+	}
+	return wl0, nil
+}
+
+// ParseWordLists checks whether the given value is a string containing comma
+// separated wordlists names. It will also try to check if every specified wordlist is known to the system.
+// double underscore are replaced with slashes.
+// If the input string is empty and language is not empty, this will return the default list for the 
+// language (i.e. list named `scribblers/$lang`)
+func ParseWordLists(cfg *config.Config, languageKey string, value string) ([]*game.WordList, error) {
+	trimmedValue := strings.TrimSpace(value)
+	if (len(trimmedValue)==0) {
+		if languageKey == "" {
+			return nil, errors.New("You must select at least one word group or select a valid language")
+		}
+		trimmedValue = "scribblers/" + languageKey
+	}
+
+	allLists := cfg.AllWordLists()
+
+	listNames := strings.Split(trimmedValue, ",")
+	count := len(listNames)
+	result := make([]*game.WordList,count)
+	for index, item := range listNames {
+		trimmedItem := strings.TrimSpace(item)
+		replacedItem := strings.Replace(trimmedItem, "__", "/", -1)
+		wl,error := GetWordList(allLists, replacedItem)
+		if error != nil {
+			return nil, fmt.Errorf("Could not find word group %s", replacedItem)
+		}
+		result[index] = wl
+	}
+	return result, nil
+}
+
 // ParseLanguage checks whether the given value is part of the
 // game.SupportedLanguages array. The input is trimmed and lowercased.
 func ParseLanguage(value string) (*game.LanguageData, string, error) {

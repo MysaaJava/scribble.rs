@@ -146,6 +146,7 @@ func (handler *SSRHandler) createDefaultIndexPageData() *IndexPageData {
 		SettingBounds:        handler.cfg.LobbySettingBounds,
 		Languages:            game.SupportedLanguages,
 		ScoreCalculations:    game.SupportedScoreCalculations,
+		AllWordLists:	      handler.cfg.AllWordLists(),
 		LobbySettingDefaults: handler.cfg.LobbySettingDefaults,
 	}
 }
@@ -160,6 +161,7 @@ type IndexPageData struct {
 	Locale            string
 	Errors            []string
 	Languages         map[string]string
+	AllWordLists      []*game.WordList
 	ScoreCalculations []string
 }
 
@@ -181,6 +183,8 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	clientsPerIPLimit, clientsPerIPLimitInvalid := api.ParseClientsPerIPLimit(handler.cfg, request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := api.ParseBoolean("public", request.Form.Get("public"))
 	wordsPerTurn, wordsPerTurnInvalid := api.ParseWordsPerTurn(handler.cfg, request.Form.Get("words_per_turn"))
+	wordLists, wordListsInvalid := api.ParseWordLists(handler.cfg, languageKey, request.Form.Get("word_lists"))
+
 
 	if wordsPerTurn < customWordsPerTurn {
 		wordsPerTurnInvalid = errors.New("words per turn must be greater than or equal to custom words per turn")
@@ -207,10 +211,12 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 			CustomWordsPerTurn: request.Form.Get("custom_words_per_turn"),
 			ClientsPerIPLimit:  request.Form.Get("clients_per_ip_limit"),
 			Language:           request.Form.Get("language"),
+			WordLists:          request.Form.Get("word_lists"),
 			ScoreCalculation:   request.Form.Get("score_calculation"),
 			WordsPerTurn:       request.Form.Get("words_per_turn"),
 		},
 		Languages:         game.SupportedLanguages,
+		AllWordLists:      handler.cfg.AllWordLists(),
 		ScoreCalculations: game.SupportedScoreCalculations,
 	}
 
@@ -219,6 +225,9 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	}
 	if languageInvalid != nil {
 		pageData.Errors = append(pageData.Errors, languageInvalid.Error())
+	}
+	if wordListsInvalid != nil {
+		pageData.Errors = append(pageData.Errors, wordListsInvalid.Error())
 	}
 	if drawingTimeInvalid != nil {
 		pageData.Errors = append(pageData.Errors, drawingTimeInvalid.Error())
@@ -239,6 +248,7 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 			pageData.Errors = append(pageData.Errors, "custom words must be provided when using custom language")
 		}
 	}
+
 	if clientsPerIPLimitInvalid != nil {
 		pageData.Errors = append(pageData.Errors, clientsPerIPLimitInvalid.Error())
 	}
@@ -273,7 +283,7 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 		WordsPerTurn:       wordsPerTurn,
 	}
 	player, lobby, err := game.CreateLobby("", playerName, languageKey,
-		lobbySettings, customWords, scoreCalculation)
+		wordLists, lobbySettings, customWords, scoreCalculation)
 	if err != nil {
 		pageData.Errors = append(pageData.Errors, err.Error())
 		if err := pageTemplates.ExecuteTemplate(writer, "index", pageData); err != nil {

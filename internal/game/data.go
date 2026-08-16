@@ -71,7 +71,7 @@ type Lobby struct {
 	preSelectedWord   int
 	// wordChoice represents the current choice of words present to the drawer.
 	wordChoice []string
-	Wordpack   string
+	WordLists   []*WordList
 	// roundEndTime represents the time at which the current round will end.
 	// This is a UTC unix-timestamp in milliseconds.
 	roundEndTime   int64

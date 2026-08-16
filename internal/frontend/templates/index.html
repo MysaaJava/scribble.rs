@@ -1,3 +1,16 @@
+{{define "wordLists"}}
+    <ul>
+    {{range $i, $wg := .}}
+        <li class="{{if $wg.Children}}parent-item{{else}}leaf-item{{end}}">
+            <input type="checkbox" name="word_lists" class="checkbox-item" id="wgCheckbox-{{$wg.Id}}" value="{{$wg.Id}}"/>
+            <label for="wgCheckbox-{{$wg.Id}}">{{$wg.Name}}</label>
+        </li>
+        {{if $wg.Children}}
+            {{template "wordLists" $wg.Children}}
+        {{end}}
+    {{end}}
+    </ul>
+{{end}}
 {{define "index"}}
 <!DOCTYPE html>
 <html lang="{{.Locale}}">
@@ -61,6 +74,11 @@
                                 </option>
                                 {{end}}
                             </select>
+                            <b>{{.Translation.Get "word-lists"}}</b>
+                            <div id="word-lists-panel" class="large-input-item">
+                                {{template "wordLists" .AllWordLists}}
+                            </div>
+
                             <label class="lobby-create-label" for="score_calculation">
                                 {{.Translation.Get "score-calculation"}}
                             </label>

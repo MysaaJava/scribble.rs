@@ -73,7 +73,7 @@ func initFrenchTranslation() *Translation {
 	translation.put("create-lobby", "Créer un salon")
 	translation.put("create-public-lobby", "Créer un salon public")
 	translation.put("create-private-lobby", "Créer un salon privé")
-	translation.put("no-lobbies-yet", "Il n'y a encore aucun salon.")
+	translation.put("no-lobbies-yet", "Il n&apos;y a encore aucun salon.")
 	translation.put("lobby-full", "Désolé, le salon est complet.")
 	translation.put("lobby-ip-limit-excceeded", "Désolé, vous avez dépassé le nombre maximal de clients par IP.")
 	translation.put("lobby-open-tab-exists", "Il semble qu'un onglet pour ce salon soit déjà ouvert.")
@@ -121,7 +121,7 @@ func initFrenchTranslation() *Translation {
 			"été configuré correctement.\n\nPour réessayer, rechargez la page.")
 	translation.put("message-too-long", "Votre message est trop long.")
 	translation.put("server-shutting-down-title", "Arrêt du serveur")
-	translation.put("server-shutting-down-text", "Désolé, le serveur va s'arrêter. Merci de revenir plus tard.")
+	translation.put("server-shutting-down-text", "Désolé, le serveur va s&apos;arrêter. Merci de revenir plus tard.")
 
 	// Help dialog
 	translation.put("controls", "Contrôles")

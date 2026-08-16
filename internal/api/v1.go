@@ -48,7 +48,7 @@ type LobbyEntries []*LobbyEntry
 // LobbyEntry is an API object for representing a join-able public lobby.
 type LobbyEntry struct {
 	LobbyID         string     `json:"lobbyId"`
-	Wordpack        string     `json:"wordpack"`
+	WordLists       []string   `json:"wordlists"`
 	Scoring         string     `json:"scoring"`
 	State           game.State `json:"state"`
 	PlayerCount     int        `json:"playerCount"`
@@ -67,6 +67,10 @@ func (handler *V1Handler) getLobbies(writer http.ResponseWriter, _ *http.Request
 	lobbies := state.GetPublicLobbies()
 	lobbyEntries := make(LobbyEntries, 0, len(lobbies))
 	for _, lobby := range lobbies {
+		wordlistsNames := make([]string, len(lobby.WordLists))
+		for i, wl := range lobby.WordLists {
+			wordlistsNames[i] = wl.Name
+		}
 		// While one would expect locking the lobby here, it's not very
 		// important to get 100% consistent results here.
 		lobbyEntries = append(lobbyEntries, &LobbyEntry{
@@ -78,7 +82,7 @@ func (handler *V1Handler) getLobbies(writer http.ResponseWriter, _ *http.Request
 			DrawingTime:     lobby.DrawingTime,
 			CustomWords:     len(lobby.CustomWords) > 0,
 			MaxClientsPerIP: lobby.ClientsPerIPLimit,
-			Wordpack:        lobby.Wordpack,
+			WordLists:       wordlistsNames,
 			State:           lobby.State,
 			Scoring:         lobby.ScoreCalculation.Identifier(),
 		})
@@ -116,6 +120,7 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	scoreCalculation, scoreCalculationInvalid := ParseScoreCalculation(request.Form.Get("score_calculation"))
 	languageRawValue := strings.ToLower(strings.TrimSpace(request.Form.Get("language")))
 	languageData, languageKey, languageInvalid := ParseLanguage(languageRawValue)
+	wordLists, wordListsInvalid := ParseWordLists(handler.cfg, languageKey, request.Form.Get("word_lists"))
 	drawingTime, drawingTimeInvalid := ParseDrawingTime(handler.cfg, request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := ParseRounds(handler.cfg, request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := ParseMaxPlayers(handler.cfg, request.Form.Get("max_players"))
@@ -142,6 +147,9 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	}
 	if languageInvalid != nil {
 		requestErrors = append(requestErrors, languageInvalid.Error())
+	}
+	if wordListsInvalid != nil {
+		requestErrors = append(requestErrors, wordListsInvalid.Error())
 	}
 	if drawingTimeInvalid != nil {
 		requestErrors = append(requestErrors, drawingTimeInvalid.Error())
@@ -188,7 +196,7 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 		WordsPerTurn:       wordsPerTurn,
 	}
 	player, lobby, err := game.CreateLobby(lobbyId, playerName,
-		languageKey, lobbySettings, customWords, scoreCalculation)
+		languageKey, wordLists, lobbySettings, customWords, scoreCalculation)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return

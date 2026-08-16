@@ -5,6 +5,8 @@ import (
 	"log"
 	"maps"
 	"os"
+	"io/fs"
+	"path"
 	"reflect"
 	"strings"
 	"time"
@@ -23,6 +25,7 @@ type LobbySettingDefaults struct {
 	CustomWordsPerTurn string `env:"CUSTOM_WORDS_PER_TURN"`
 	ClientsPerIPLimit  string `env:"CLIENTS_PER_IP_LIMIT"`
 	Language           string `env:"LANGUAGE"`
+	WordLists          string `env:"WORDLISTS"`
 	ScoreCalculation   string `env:"SCORE_CALCULATION"`
 	WordsPerTurn       string `env:"WORDS_PER_TURN"`
 }
@@ -74,6 +77,7 @@ type Config struct {
 	Port                 uint16               `env:"PORT"`
 	CORS                 CORS                 `envPrefix:"CORS_"`
 	LobbyCleanup         LobbyCleanup         `envPrefix:"LOBBY_CLEANUP_"`
+	WordListsPath        string               `env:"WORDLISTS_PATH"`
 }
 
 var Default = Config{
@@ -86,6 +90,7 @@ var Default = Config{
 		CustomWordsPerTurn: "3",
 		ClientsPerIPLimit:  "2",
 		Language:           "english",
+		WordLists:           "",
 		ScoreCalculation:   "chill",
 		WordsPerTurn:       "3",
 	},
@@ -162,4 +167,73 @@ func Load() (*Config, error) {
 	config.RootPath = strings.Trim(config.RootPath, "/")
 
 	return &config, nil
+}
+
+// Helper function for AllWordLists
+// It creates a wordlist recursively reading a filesystem folder
+// Its argument are
+// - The filesystem at some folder describing a wordlist
+// - The path of this folder
+// - The name prefix of the output wordlist (can be empty)
+// - The name of the current wordlist
+// - A link to the parent of the current wordlists (can be empty)
+func WordListsInFolder(fsys fs.FS,basepath string, prefix string, name string, parent *game.WordList) game.WordList {
+	files, _ := fs.ReadDir(fsys, ".")
+
+	children := make([]*game.WordList, len(files))
+
+	var fullname string
+	if(prefix == ""){
+		fullname = name
+	} else {
+		fullname = prefix + "/" + name
+	}
+	out := game.WordList{
+		Name: name,
+		FullName: fullname,
+		Path: "",
+		Parent: parent,
+		Children: children,
+	}
+	for i, file := range files {
+		fname := file.Name()
+		fpath := path.Join(basepath, fname)
+		var fprefix string
+		var fullname string
+		if(prefix == ""){
+			fprefix = name
+		} else {
+			fprefix = prefix + "/" + name
+		}
+		if file.IsDir() {
+			subfs, _ := fs.Sub(fsys, fname)
+			wl := WordListsInFolder(subfs, fpath, fprefix, fname, &out)
+			children[i] = &wl
+		} else {
+			fname, _ = strings.CutSuffix(fname, ".txt")
+			if(fprefix == ""){
+				fullname = fname
+			} else {
+				fullname = fprefix + "/" + fname
+			}
+			children[i] = &game.WordList{
+				Name: fname,
+				FullName: fullname,
+				Path: fpath,
+				Parent: &out,
+				Children: []*game.WordList{},
+			}
+		}
+	}
+	return out
+}
+
+// AllWordLists instantiates and returns the list of word lists defined in
+// the folder specified in the config
+func (c Config) AllWordLists() []*game.WordList {
+	log.Printf("Reading word lists from %s\n", c.WordListsPath)
+	mainEntry := os.DirFS(c.WordListsPath)
+	mainEntry = mainEntry.(fs.ReadDirFS)
+	mainList := WordListsInFolder(mainEntry, c.WordListsPath, "", "", nil)
+	return mainList.Children
 }
