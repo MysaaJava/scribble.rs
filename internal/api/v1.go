@@ -471,7 +471,7 @@ func CreateLobbyData(cfg *config.Config, lobby *game.Lobby) *LobbyData {
 		SettingBounds:         cfg.LobbySettingBounds,
 		EditableLobbySettings: lobby.EditableLobbySettings,
 		GameConstants:         GameConstantsData,
-		IsWordpackRtl:         lobby.IsWordpackRtl,
+		IsWordpackRtl:         lobby.Lang.IsRtl,
 	}
 }
 

@@ -4,11 +4,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"github.com/scribble-rs/scribble.rs/internal/sanitize"
 
 	discordemojimap "github.com/Bios-Marcel/discordemojimap/v2"
 	"github.com/gofrs/uuid/v5"
 	"github.com/lxzan/gws"
-	"golang.org/x/text/cases"
 )
 
 // slotReservationTime should give a player enough time to restart their browser
@@ -94,15 +94,13 @@ type Lobby struct {
 	lastDrawEvent                 time.Time
 	connectedDrawEventsIndexStack []int
 
-	lowercaser cases.Caser
-
 	// LastPlayerDisconnectTime is used to know since when a lobby is empty, in case
 	// it is empty.
 	LastPlayerDisconnectTime *time.Time
 
 	mutex sync.Mutex
 
-	IsWordpackRtl bool
+	Lang sanitize.LanguageData
 
 	WriteObject          func(*Player, any) error
 	WritePreparedMessage func(*Player, *gws.Broadcaster) error

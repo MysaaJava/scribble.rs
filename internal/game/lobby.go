@@ -317,8 +317,8 @@ func handleMessage(message string, sender *Player, lobby *Lobby) {
 		return
 	}
 
-	normInput := sanitize.CleanText(lobby.lowercaser.String(trimmedMessage))
-	normSearched := sanitize.CleanText(lobby.lowercaser.String(lobby.CurrentWord))
+	normInput := lobby.Lang.CleanText(trimmedMessage)
+	normSearched := lobby.Lang.CleanText(lobby.CurrentWord)
 
 	switch CheckGuess(normInput, normSearched) {
 	case EqualGuess:
@@ -1006,8 +1006,8 @@ func (lobby *Lobby) selectWord(index int) error {
 		// guesser, those are always shown. An example would be "Pac-Man".
 		// Because these characters aren't relevant for the guess, they
 		// aren't being underlined.
-		isAlwaysVisibleCharacter := char == ' ' || char == '_' || char == '-'
-
+		isAlwaysVisibleCharacter := lobby.Lang.IsAlwaysVisibleCharacter(char)
+		
 		// The hints for the drawer are always visible, therefore they
 		// don't require any handling of different cases.
 		lobby.wordHintsShown = append(lobby.wordHintsShown, &WordHint{
@@ -1081,14 +1081,12 @@ func CreateLobby(
 	// the one specified for the lobby. If for example you chose 100 french
 	// custom words, but keep english_us as the lobby language, the casing rules
 	// will most likely be faulty.
-	lobby.lowercaser = WordlistData[chosenLanguage].Lowercaser()
-
-	lobby.IsWordpackRtl = WordlistData[chosenLanguage].IsRtl
+	lobby.Lang = sanitize.AllLanguageData[chosenLanguage]
 
 	// customWords are lowercased afterwards, as they are direct user input.
 	if len(customWords) > 0 {
 		for customWordIndex, customWord := range customWords {
-			customWords[customWordIndex] = lobby.lowercaser.String(customWord)
+			customWords[customWordIndex] = lobby.Lang.CleanText(customWord)
 		}
 	}
 

@@ -5,10 +5,12 @@ import (
 	"unicode/utf8"
 )
 
+var DefaultAlwaysVisibleCharacters = " _-"
+
 // FIXME Improve transliteration set or document why the current state
-// is acceptableb. These transliterations originally come from
+// is acceptable. These transliterations originally come from
 // github.com/kennygrant/sanitize.
-var transliterations = map[rune]string{
+var DefaultTransliterations = map[rune]string{
 	'À': "A",
 	'Á': "A",
 	'Â': "A",
@@ -81,11 +83,16 @@ var transliterations = map[rune]string{
 	'ż': "z",
 	'þ': "th",
 	'ß': "ss",
+	'’': "'",
+	'—': "-",
 }
 
 // CleanText removes all kinds of characters that could disturb the algorithm
 // checking words for similarity.
-func CleanText(str string) string {
+func (lang LanguageData) CleanText(str string) string {
+
+	str = lang.Lowercaser().String(str)
+
 	var buffer []byte
 
 	// We try to stack allocate, but also make
@@ -99,16 +106,15 @@ func CleanText(str string) string {
 	var changed bool
 	for _, character := range str {
 		if character < utf8.RuneSelf {
-			switch character {
-			case ' ', '-', '_':
+			if lang.IsAlwaysVisibleCharacter(character) {
 				changed = true
-			default:
+			} else {
 				buffer = append(buffer, byte(character))
 			}
 			continue
 		}
 
-		if val, contains := transliterations[character]; contains {
+		if val, contains := lang.Transliterations[character]; contains {
 			buffer = append(buffer, val...)
 			changed = true
 		} else {
@@ -120,4 +126,13 @@ func CleanText(str string) string {
 		return str
 	}
 	return string(buffer)
+}
+
+func (lang LanguageData) IsAlwaysVisibleCharacter(c rune) bool {
+	for _, x := range lang.AlwaysVisibleCharacters {
+		if x == c {
+			return true
+		}
+	}
+	return false
 }

@@ -1,89 +1,20 @@
 package game
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"strings"
+	"errors"
 	"unicode/utf8"
 	"bufio"
 	"os"
+	"github.com/scribble-rs/scribble.rs/internal/sanitize"
 
 	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
-type LanguageData struct {
-	Lowercaser   func() cases.Caser
-	LanguageCode string
-	IsRtl        bool
-}
-
-var (
-	ErrUnknownWordList = errors.New("wordlist unknown")
-	WordlistData       = map[string]LanguageData{
-		"custom": {
-			LanguageCode: "en_gb",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.BritishEnglish) },
-		},
-		"english_gb": {
-			LanguageCode: "en_gb",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.BritishEnglish) },
-		},
-		"english": {
-			LanguageCode: "en_us",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.AmericanEnglish) },
-		},
-		"italian": {
-			LanguageCode: "it",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Italian) },
-		},
-		"german": {
-			LanguageCode: "de",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.German) },
-		},
-		"french": {
-			LanguageCode: "fr",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.French) },
-		},
-		"dutch": {
-			LanguageCode: "nl",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Dutch) },
-		},
-		"ukrainian": {
-			LanguageCode: "ua",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Ukrainian) },
-		},
-		"russian": {
-			LanguageCode: "ru",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Russian) },
-		},
-		"polish": {
-			LanguageCode: "pl",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Polish) },
-		},
-		"arabic": {
-			IsRtl:        true,
-			LanguageCode: "ar",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Arabic) },
-		},
-		"hebrew": {
-			IsRtl:        true,
-			LanguageCode: "he",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Hebrew) },
-		},
-		"persian": {
-			IsRtl:        true,
-			LanguageCode: "fa",
-			Lowercaser:   func() cases.Caser { return cases.Lower(language.Persian) },
-		},
-	}
-)
-
-func getLanguageIdentifier(language string) string {
-	return WordlistData[language].LanguageCode
-}
+var ErrUnknownWordList = errors.New("Unknown word list")
 
 // readWordListInternal exists for testing purposes, it allows passing a custom
 // wordListSupplier, in order to avoid having to write tests aggainst the
@@ -92,7 +23,7 @@ func readWordListInternal(
 	lowercaser cases.Caser, chosenLanguage string,
 	wordlistSupplier func(string) (string, error),
 ) ([]string, error) {
-	languageIdentifier := getLanguageIdentifier(chosenLanguage)
+	languageIdentifier := sanitize.AllLanguageData[chosenLanguage].LanguageCode
 	if languageIdentifier == "" {
 		return nil, ErrUnknownWordList
 	}

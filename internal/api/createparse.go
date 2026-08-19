@@ -8,6 +8,7 @@ import (
 
 	"github.com/scribble-rs/scribble.rs/internal/config"
 	"github.com/scribble-rs/scribble.rs/internal/game"
+	"github.com/scribble-rs/scribble.rs/internal/sanitize"
 	"golang.org/x/text/cases"
 )
 
@@ -81,9 +82,9 @@ func ParseWordLists(cfg *config.Config, languageKey string, value string) ([]*ga
 
 // ParseLanguage checks whether the given value is part of the
 // game.SupportedLanguages array. The input is trimmed and lowercased.
-func ParseLanguage(value string) (*game.LanguageData, string, error) {
+func ParseLanguage(value string) (*sanitize.LanguageData, string, error) {
 	toLower := strings.ToLower(strings.TrimSpace(value))
-	for languageKey, data := range game.WordlistData {
+	for languageKey, data := range sanitize.AllLanguageData {
 		if toLower == languageKey {
 			return &data, languageKey, nil
 		}
