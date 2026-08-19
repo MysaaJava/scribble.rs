@@ -7,7 +7,6 @@ import (
 	"math/rand/v2"
 	"strings"
 	"unicode/utf8"
-	"slices"
 	"bufio"
 	"os"
 
@@ -151,21 +150,9 @@ func reloadLobbyWords(lobby *Lobby) ([]string, error) {
 			return nil, err
 		}
 	}
+	shuffleWordList(*wordsp)
 	log.Printf("Read a total of %d words", len(*wordsp))
 	return *wordsp, nil
-}
-
-// Helper function that takes out `count` random items out af an array `arr`
-func RandNUniqueOfSlice(count int, arr []string) []string {
-	out := make([]string,count)
-	for i := 0; i < count; i++ {
-		var candidate string
-		for k := 0; k < count * count * 100 && (slices.Contains(out,candidate)); k++ {
-			candidate = arr[rand.IntN(len(arr))]
-		}
-		out[i] = candidate
-	}
-	return out
 }
 
 // GetRandomWords gets a custom amount of random words for the passed Lobby.

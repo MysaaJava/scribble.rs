@@ -318,7 +318,7 @@ func handleMessage(message string, sender *Player, lobby *Lobby) {
 	}
 
 	normInput := sanitize.CleanText(lobby.lowercaser.String(trimmedMessage))
-	normSearched := sanitize.CleanText(lobby.CurrentWord)
+	normSearched := sanitize.CleanText(lobby.lowercaser.String(lobby.CurrentWord))
 
 	switch CheckGuess(normInput, normSearched) {
 	case EqualGuess:
