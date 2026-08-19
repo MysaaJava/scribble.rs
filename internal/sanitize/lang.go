@@ -49,7 +49,7 @@ var (
 			LanguageCode: "fr",
 			Lowercaser:   func() cases.Caser { return cases.Lower(language.French) },
 			Transliterations: DefaultTransliterations,
-			AlwaysVisibleCharacters: DefaultAlwaysVisibleCharacters,
+			AlwaysVisibleCharacters: DefaultAlwaysVisibleCharacters + "'.",
 		},
 		"dutch": {
 			LanguageCode: "nl",

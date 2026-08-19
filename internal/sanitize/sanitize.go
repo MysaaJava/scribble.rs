@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 )
 
-var DefaultAlwaysVisibleCharacters = " _-"
+var DefaultAlwaysVisibleCharacters = " _-,:?!/#+&()=<>\""
 
 // FIXME Improve transliteration set or document why the current state
 // is acceptable. These transliterations originally come from
@@ -48,14 +48,17 @@ var DefaultTransliterations = map[rune]string{
 	'á': "a",
 	'â': "a",
 	'ã': "a",
+	'ă': "a",
 	'ä': "ae",
 	'å': "aa",
 	'æ': "ae",
+	'ć': "c",
 	'ç': "c",
 	'è': "e",
 	'é': "e",
 	'ê': "e",
 	'ë': "e",
+	'ę': "e",
 	'ì': "i",
 	'í': "i",
 	'î': "i",
@@ -73,6 +76,7 @@ var DefaultTransliterations = map[rune]string{
 	'ø': "oe",
 	'œ': "oe",
 	'ś': "s",
+	'š': "s",
 	'ù': "u",
 	'ú': "u",
 	'û': "u",
@@ -81,10 +85,23 @@ var DefaultTransliterations = map[rune]string{
 	'ý': "y",
 	'ÿ': "y",
 	'ż': "z",
+	'ž': "z",
 	'þ': "th",
 	'ß': "ss",
+	'²': "2",
+	'¹': "1",
+	'³': "3",
+	'⁴': "4",
+	'⁵': "5",
+	'⁶': "6",
+	'⁷': "7",
+	'⁸': "8",
+	'⁹': "9",
 	'’': "'",
 	'—': "-",
+	'–': "-",
+	' ': " ",
+	'′': "'",
 }
 
 // CleanText removes all kinds of characters that could disturb the algorithm
@@ -129,6 +146,14 @@ func (lang LanguageData) CleanText(str string) string {
 }
 
 func (lang LanguageData) IsAlwaysVisibleCharacter(c rune) bool {
+	if val, contains := lang.Transliterations[c]; contains {
+		for _, cc := range val {
+			if (! lang.IsAlwaysVisibleCharacter(cc)) {
+				return false
+			}
+		}
+		return true
+	}
 	for _, x := range lang.AlwaysVisibleCharacters {
 		if x == c {
 			return true
