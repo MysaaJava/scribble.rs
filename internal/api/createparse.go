@@ -54,21 +54,19 @@ func GetWordList(lists []*game.WordList, name string) (*game.WordList, error) {
 // double underscore are replaced with slashes.
 // If the input string is empty and language is not empty, this will return the default list for the 
 // language (i.e. list named `scribblers/$lang`)
-func ParseWordLists(cfg *config.Config, languageKey string, value string) ([]*game.WordList, error) {
-	trimmedValue := strings.TrimSpace(value)
-	if (len(trimmedValue)==0) {
+func ParseWordLists(cfg *config.Config, languageKey string, values []string) ([]*game.WordList, error) {
+	if (len(values)==0) {
 		if languageKey == "" {
 			return nil, errors.New("You must select at least one word group or select a valid language")
 		}
-		trimmedValue = "scribblers/" + languageKey
+		values = []string{"scribblers/" + languageKey}
 	}
 
 	allLists := cfg.AllWordLists()
 
-	listNames := strings.Split(trimmedValue, ",")
-	count := len(listNames)
+	count := len(values)
 	result := make([]*game.WordList,count)
-	for index, item := range listNames {
+	for index, item := range values {
 		trimmedItem := strings.TrimSpace(item)
 		replacedItem := strings.Replace(trimmedItem, "__", "/", -1)
 		wl,error := GetWordList(allLists, replacedItem)

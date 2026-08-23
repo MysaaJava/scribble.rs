@@ -183,7 +183,7 @@ func (handler *SSRHandler) ssrCreateLobby(writer http.ResponseWriter, request *h
 	clientsPerIPLimit, clientsPerIPLimitInvalid := api.ParseClientsPerIPLimit(handler.cfg, request.Form.Get("clients_per_ip_limit"))
 	publicLobby, publicLobbyInvalid := api.ParseBoolean("public", request.Form.Get("public"))
 	wordsPerTurn, wordsPerTurnInvalid := api.ParseWordsPerTurn(handler.cfg, request.Form.Get("words_per_turn"))
-	wordLists, wordListsInvalid := api.ParseWordLists(handler.cfg, languageKey, request.Form.Get("word_lists"))
+	wordLists, wordListsInvalid := api.ParseWordLists(handler.cfg, languageKey, request.Form["word_lists"])
 
 
 	if wordsPerTurn < customWordsPerTurn {

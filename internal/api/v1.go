@@ -120,7 +120,7 @@ func (handler *V1Handler) postLobby(writer http.ResponseWriter, request *http.Re
 	scoreCalculation, scoreCalculationInvalid := ParseScoreCalculation(request.Form.Get("score_calculation"))
 	languageRawValue := strings.ToLower(strings.TrimSpace(request.Form.Get("language")))
 	languageData, languageKey, languageInvalid := ParseLanguage(languageRawValue)
-	wordLists, wordListsInvalid := ParseWordLists(handler.cfg, languageKey, request.Form.Get("word_lists"))
+	wordLists, wordListsInvalid := ParseWordLists(handler.cfg, languageKey, request.Form["word_lists"])
 	drawingTime, drawingTimeInvalid := ParseDrawingTime(handler.cfg, request.Form.Get("drawing_time"))
 	rounds, roundsInvalid := ParseRounds(handler.cfg, request.Form.Get("rounds"))
 	maxPlayers, maxPlayersInvalid := ParseMaxPlayers(handler.cfg, request.Form.Get("max_players"))

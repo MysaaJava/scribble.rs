@@ -132,8 +132,12 @@ func (lang LanguageData) CleanText(str string) string {
 		}
 
 		if val, contains := lang.Transliterations[character]; contains {
-			buffer = append(buffer, val...)
-			changed = true
+			valRunes := []rune(val)
+			// We avoid the case when character has been transliterated to an 'always visible' character
+			if ((len(valRunes) != 1) || (! lang.IsAlwaysVisibleCharacter(valRunes[0]))) {
+				buffer = append(buffer, val...)
+			}
+			changed = true // Either case
 		} else {
 			buffer = utf8.AppendRune(buffer, character)
 		}
@@ -146,14 +150,6 @@ func (lang LanguageData) CleanText(str string) string {
 }
 
 func (lang LanguageData) IsAlwaysVisibleCharacter(c rune) bool {
-	if val, contains := lang.Transliterations[c]; contains {
-		for _, cc := range val {
-			if (! lang.IsAlwaysVisibleCharacter(cc)) {
-				return false
-			}
-		}
-		return true
-	}
 	for _, x := range lang.AlwaysVisibleCharacters {
 		if x == c {
 			return true
